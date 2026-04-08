@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, ShoppingBag } from 'lucide-react';
+import { Eye, EyeOff, Phone, Lock, ShoppingBag } from 'lucide-react';
+import { useAuth } from '../hooks/api';
 import './LoginPage.css';
 
 interface LoginPageProps {
@@ -7,18 +8,32 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const { login, isLoggingIn } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email || !password) { setError('Please fill in all fields.'); return; }
-    setIsLoading(true);
-    setTimeout(() => { setIsLoading(false); onLogin(); }, 1200);
+
+    if (!phoneNumber || !password) {
+      setError('Please fill in all fields.');
+      return;
+    }
+
+    try {
+      await login({ phoneNumber, password });
+      onLogin();
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Login failed. Please try again.');
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
+    }
   };
 
   return (
@@ -84,16 +99,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="phoneNumber">Phone Number</label>
               <div className="input-wrapper">
-                <Mail size={18} className="input-icon" />
+                <Phone size={18} className="input-icon" />
                 <input
-                  id="email"
-                  type="email"
-                  placeholder="admin@clot.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
+                  id="phoneNumber"
+                  type="tel"
+                  placeholder="+1234567890"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  autoComplete="tel"
                 />
               </div>
             </div>
@@ -134,14 +149,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             <button
               id="login-submit"
               type="submit"
-              className={`btn-login ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
+              className={`btn-login ${isLoggingIn ? 'loading' : ''}`}
+              disabled={isLoggingIn}
             >
-              {isLoading ? <span className="spinner" /> : 'Sign In →'}
+              {isLoggingIn ? <span className="spinner" /> : 'Sign In →'}
             </button>
           </form>
 
-          <p className="login-hint">Demo: enter any email &amp; password to continue</p>
+          <p className="login-hint">Enter your phone number and password to sign in</p>
         </div>
       </div>
     </div>
