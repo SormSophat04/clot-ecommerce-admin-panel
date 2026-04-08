@@ -1,4 +1,10 @@
 import { ShoppingBag, Package, Users, DollarSign } from 'lucide-react';
+import {
+  useDashboardSummary,
+  useDashboardRevenue,
+  useDashboardCategories,
+  useReviews,
+} from './hooks/api';
 import SummaryCard from './components/dashboard/SummaryCard';
 import PieChartWidget from './components/dashboard/PieChartWidget';
 import RevenueLineChart from './components/dashboard/RevenueLineChart';
@@ -7,21 +13,100 @@ import CustomerMapChart from './components/dashboard/CustomerMapChart';
 import ReviewCard from './components/dashboard/ReviewCard';
 import './Dashboard.css';
 
+// Format number with commas
+const formatNumber = (num: number): string => {
+  return num.toLocaleString();
+};
+
+// Format currency
+const formatCurrency = (amount: number): string => {
+  if (amount >= 1000000) {
+    return `$${(amount / 1000000).toFixed(1)}M`;
+  }
+  if (amount >= 1000) {
+    return `$${(amount / 1000).toFixed(0)}K`;
+  }
+  return `$${amount.toFixed(0)}`;
+};
+
+// Format percentage
+const formatPercent = (value: number): string => {
+  return `${value > 0 ? '+' : ''}${value.toFixed(0)}%`;
+};
+
+// Get relative time string
+const getRelativeTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return '1 week ago';
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  return `${Math.floor(diffDays / 30)} months ago`;
+};
+
 const Dashboard = () => {
+  const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
+  const { data: revenueData } = useDashboardRevenue(30);
+  const { data: categoryData } = useDashboardCategories();
+  const { data: reviews } = useReviews(4);
+
+  // Loading state
+  if (summaryLoading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner" />
+        <p>Loading dashboard...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-content">
       {/* ── Summary row ── */}
       <div className="summary-cards-row">
-        <SummaryCard title="Total Orders"    value="8,432"  trend="12%" trendUp={true}  icon={ShoppingBag} iconBgColor="rose"   />
-        <SummaryCard title="Total Products"  value="12,084" trend="8%"  trendUp={true}  icon={Package}     iconBgColor="blue"   />
-        <SummaryCard title="Total Customers" value="4,670"  trend="5%"  trendUp={true}  icon={Users}       iconBgColor="green"  />
-        <SummaryCard title="Total Revenue"   value="$128K"  trend="18%" trendUp={true}  icon={DollarSign}  iconBgColor="amber"  />
+        <SummaryCard
+          title="Total Orders"
+          value={formatNumber(summary?.totalOrders || 0)}
+          trend={formatPercent(summary?.ordersChange || 0)}
+          trendUp={(summary?.ordersChange || 0) > 0}
+          icon={ShoppingBag}
+          iconBgColor="rose"
+        />
+        <SummaryCard
+          title="Total Products"
+          value={formatNumber(summary?.totalProducts || 0)}
+          trend={formatPercent(summary?.productsChange || 0)}
+          trendUp={(summary?.productsChange || 0) > 0}
+          icon={Package}
+          iconBgColor="blue"
+        />
+        <SummaryCard
+          title="Total Customers"
+          value={formatNumber(summary?.totalCustomers || 0)}
+          trend={formatPercent(summary?.customersChange || 0)}
+          trendUp={(summary?.customersChange || 0) > 0}
+          icon={Users}
+          iconBgColor="green"
+        />
+        <SummaryCard
+          title="Total Revenue"
+          value={formatCurrency(summary?.totalRevenue || 0)}
+          trend={formatPercent(summary?.revenueChange || 0)}
+          trendUp={(summary?.revenueChange || 0) > 0}
+          icon={DollarSign}
+          iconBgColor="amber"
+        />
       </div>
 
       {/* ── Charts row ── */}
       <div className="charts-row">
-        <PieChartWidget />
-        <RevenueLineChart />
+        <PieChartWidget data={categoryData} />
+        <RevenueLineChart data={revenueData} />
       </div>
 
       {/* ── Analytics row ── */}
@@ -37,38 +122,17 @@ const Dashboard = () => {
           <a href="#" className="see-all">See all →</a>
         </div>
         <div className="reviews-carousel">
-          <ReviewCard
-            name="Emma Johnson"
-            timeText="2 days ago"
-            reviewText="The quality of the jeans is outstanding. Fits perfectly and the denim feels premium. Definitely will buy again!"
-            rating={5}
-            avatarUrl="https://ui-avatars.com/api/?name=Emma+Johnson&background=E94560&color=fff&bold=true"
-            productImageUrl="https://images.unsplash.com/photo-1542272604-787c3835535d?w=200&h=200&fit=crop"
-          />
-          <ReviewCard
-            name="James Carter"
-            timeText="4 days ago"
-            reviewText="The sneakers look exactly like in the pictures. Super comfortable and delivered in 2 days. Will recommend to friends."
-            rating={4}
-            avatarUrl="https://ui-avatars.com/api/?name=James+Carter&background=3B82F6&color=fff&bold=true"
-            productImageUrl="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&h=200&fit=crop"
-          />
-          <ReviewCard
-            name="Sophia Lee"
-            timeText="1 week ago"
-            reviewText="Absolutely love the jacket! The material is lightweight but warm. Great for the season. Perfect purchase!"
-            rating={5}
-            avatarUrl="https://ui-avatars.com/api/?name=Sophia+Lee&background=10B981&color=fff&bold=true"
-            productImageUrl="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=200&h=200&fit=crop"
-          />
-          <ReviewCard
-            name="Liam Brown"
-            timeText="2 weeks ago"
-            reviewText="The shirt fabric is very soft. Love the minimalist design — pairs with basically anything in my wardrobe."
-            rating={4}
-            avatarUrl="https://ui-avatars.com/api/?name=Liam+Brown&background=8B5CF6&color=fff&bold=true"
-            productImageUrl="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&h=200&fit=crop"
-          />
+          {reviews?.map((review) => (
+            <ReviewCard
+              key={review.id}
+              name={review.customerName}
+              timeText={getRelativeTime(review.createdAt)}
+              reviewText={review.reviewText}
+              rating={review.rating}
+              avatarUrl={review.customerAvatar}
+              productImageUrl={review.productImageUrl}
+            />
+          ))}
         </div>
       </div>
     </div>

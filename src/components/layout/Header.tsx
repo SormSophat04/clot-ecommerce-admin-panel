@@ -1,18 +1,31 @@
-import { Search, Bell, MessageSquare, ShoppingCart, Settings, ChevronDown } from 'lucide-react';
+import { Search, Bell, MessageSquare, ShoppingCart, Settings, ChevronDown, LogOut } from 'lucide-react';
+import { useAuth } from '../../hooks/api';
 import ThemeToggle from '../ui/ThemeToggle';
 import './Header.css';
 
-const Header = () => {
+interface HeaderProps {
+  onLogout?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onLogout }) => {
+  const { user } = useAuth();
+
+  const handleLogout = async () => {
+    if (onLogout) {
+      await onLogout();
+    }
+  };
+
   return (
     <header className="header">
       <div className="header-left">
         <h2 className="page-title">Dashboard</h2>
-        <span className="page-subtitle">Hi, Admin. Welcome back to CLOT!</span>
+        <span className="page-subtitle">Hi, {user?.name || 'Admin'}. Welcome back to CLOT!</span>
       </div>
 
       <div className="header-right">
         <ThemeToggle />
-        
+
         <div className="search-bar">
           <Search className="search-icon" size={18} />
           <input type="text" placeholder="Search products, orders…" />
@@ -48,13 +61,19 @@ const Header = () => {
 
         <div className="user-profile">
           <div className="user-avatar">
-            <img src="https://ui-avatars.com/api/?name=Admin+Clot&background=E94560&color=fff&bold=true" alt="Admin" />
+            <img
+              src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Admin')}&background=E94560&color=fff&bold=true`}
+              alt={user?.name || 'Admin'}
+            />
             <span className="online-dot" />
           </div>
           <div className="user-greeting">
-            <p className="user-name">Admin</p>
-            <p className="user-role">Super Admin</p>
+            <p className="user-name">{user?.name || 'Admin'}</p>
+            <p className="user-role">{user?.role === 'admin' ? 'Super Admin' : user?.role || 'Admin'}</p>
           </div>
+          <button className="logout-btn" onClick={handleLogout} title="Logout">
+            <LogOut size={16} />
+          </button>
           <ChevronDown size={14} className="chevron" />
         </div>
       </div>

@@ -5,14 +5,15 @@ import './Layout.css';
 
 interface LayoutProps {
   children: React.ReactNode;
+  onLogout?: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ children, onLogout }) => {
   return (
     <div className="layout-container">
       <Sidebar />
       <div className="main-wrapper">
-        <Header />
+        <Header onLogout={onLogout} />
         <main className="main-content">
           {children}
         </main>
