@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '../../api/services';
-import type { CreateProductRequest, UpdateProductRequest } from '../../types/api';
+import type { CreateProductPayload, UpdateProductPayload } from '../../types/api';
 
 export const useProducts = (
   page: number = 1,
   pageSize: number = 20,
-  filters?: { category?: string; status?: string; search?: string }
+  filters?: { categoryId?: number; brandId?: number; search?: string }
 ) => {
   return useQuery({
     queryKey: ['products', 'list', page, pageSize, filters],
@@ -14,7 +14,7 @@ export const useProducts = (
   });
 };
 
-export const useProduct = (id: string) => {
+export const useProduct = (id: number) => {
   return useQuery({
     queryKey: ['products', 'detail', id],
     queryFn: () => productService.getById(id),
@@ -26,7 +26,7 @@ export const useCreateProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateProductRequest) => productService.create(data),
+    mutationFn: (data: CreateProductPayload) => productService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
@@ -37,7 +37,7 @@ export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateProductRequest }) =>
+    mutationFn: ({ id, data }: { id: number; data: UpdateProductPayload }) =>
       productService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -49,7 +49,7 @@ export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => productService.delete(id),
+    mutationFn: (id: number) => productService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
@@ -60,7 +60,7 @@ export const useUpdateProductStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'active' | 'draft' | 'archived' }) =>
+    mutationFn: ({ id, status }: { id: number; status: 'active' | 'draft' | 'archived' }) =>
       productService.updateStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });

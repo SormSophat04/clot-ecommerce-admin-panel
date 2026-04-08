@@ -1,25 +1,9 @@
 import { apiClient, setToken, removeToken } from '../client';
-import { ENDPOINTS, API_CONFIG } from '../config';
-import type { LoginRequest, LoginResponse, User } from '../../types/api';
-import { mockLoginResponse, mockUser } from '../mockData';
-
-// Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { ENDPOINTS } from '../config';
+import type { LoginRequest, LoginResponse, User, Category } from '../../types/api';
 
 export const authService = {
   login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    if (API_CONFIG.USE_MOCK) {
-      await delay(500);
-      // Validate mock credentials (accept any non-empty)
-      if (!credentials.phoneNumber || !credentials.password) {
-        throw new Error('Phone number and password are required');
-      }
-      const response = { ...mockLoginResponse };
-      response.user.phoneNumber = credentials.phoneNumber;
-      setToken(response.token);
-      return response;
-    }
-
     const response = await apiClient.post<LoginResponse>(
       ENDPOINTS.LOGIN,
       credentials,
@@ -30,12 +14,6 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    if (API_CONFIG.USE_MOCK) {
-      await delay(300);
-      removeToken();
-      return;
-    }
-
     try {
       await apiClient.post(ENDPOINTS.LOGOUT);
     } finally {
@@ -44,11 +22,10 @@ export const authService = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    if (API_CONFIG.USE_MOCK) {
-      await delay(200);
-      return mockUser;
-    }
-
     return apiClient.get<User>(ENDPOINTS.ME);
+  },
+
+  getCategories: async (): Promise<Category[]> => {
+    return apiClient.get<Category[]>(ENDPOINTS.AUTH_CATEGORIES);
   },
 };

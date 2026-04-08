@@ -50,7 +50,7 @@ const getRelativeTime = (dateString: string): string => {
 };
 
 const Dashboard = () => {
-  const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
+  const { data: summary, isLoading: summaryLoading, isError: summaryError } = useDashboardSummary();
   const { data: revenueData } = useDashboardRevenue(30);
   const { data: categoryData } = useDashboardCategories();
   const { data: reviews } = useReviews(4);
@@ -61,6 +61,15 @@ const Dashboard = () => {
       <div className="dashboard-loading">
         <div className="loading-spinner" />
         <p>Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (summaryError) {
+    return (
+      <div className="dashboard-error">
+        <p>Failed to load dashboard data. Please try again later.</p>
+        <button onClick={() => window.location.reload()} className="btn-retry">Retry</button>
       </div>
     );
   }

@@ -15,6 +15,12 @@ export {
   useUpdateProductStatus,
 } from './useProducts';
 export {
+  useProductImages,
+  useUploadProductImage,
+  useDeleteProductImage,
+  useDeleteAllProductImages,
+} from './useProductImages';
+export {
   useOrders,
   useOrder,
   useUpdateOrderStatus,
@@ -23,3 +29,24 @@ export {
   useCustomers,
   useCustomer,
 } from './useCustomers';
+export {
+  useCategories,
+  useCategory,
+  useCreateCategory,
+  useUpdateCategory,
+  useDeleteCategory,
+} from './useCategories';
+export {
+  useBrands,
+  useColors,
+  useSizes,
+  useCreateBrand,
+  useUpdateBrand,
+  useDeleteBrand,
+  useCreateColor,
+  useUpdateColor,
+  useDeleteColor,
+  useCreateSize,
+  useUpdateSize,
+  useDeleteSize,
+} from './useResources';

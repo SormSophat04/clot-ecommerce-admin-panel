@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../../api/services';
-import { setToken, removeToken } from '../../api/client';
+import { removeToken, getToken } from '../../api/client';
 import type { LoginRequest } from '../../types/api';
 
 export const useAuth = () => {
@@ -33,6 +33,7 @@ export const useAuth = () => {
     queryFn: () => authService.getCurrentUser(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!getToken(),
   });
 
   return {
@@ -41,6 +42,8 @@ export const useAuth = () => {
     user: userQuery.data,
     isLoading: userQuery.isLoading,
     isAuthenticated: !!userQuery.data,
+    isError: userQuery.isError,
+    error: userQuery.error,
     loginError: loginMutation.error,
     isLoggingIn: loginMutation.isPending,
     isLoggingOut: logoutMutation.isPending,

@@ -10,6 +10,7 @@ import type {
   Customer,
   LoginResponse,
   User,
+  Category,
 } from '../types/api';
 
 // Generate last N days dates
@@ -194,4 +195,12 @@ export const mockCustomers: Customer[] = [
     totalSpent: 320.00,
     createdAt: '2024-01-15T00:00:00Z',
   },
+];
+
+export const mockCategories: Category[] = [
+  { categoryId: 1, categoryName: 'Apparel', productCount: 450, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-03-01T00:00:00Z' },
+  { categoryId: 2, categoryName: 'Footwear', productCount: 180, createdAt: '2024-01-05T00:00:00Z', updatedAt: '2024-03-01T00:00:00Z' },
+  { categoryId: 3, categoryName: 'Accessories', productCount: 120, createdAt: '2024-01-10T00:00:00Z', updatedAt: '2024-03-01T00:00:00Z' },
+  { categoryId: 4, categoryName: 'Sportswear', productCount: 95, createdAt: '2024-01-15T00:00:00Z', updatedAt: '2024-02-28T00:00:00Z' },
+  { categoryId: 5, categoryName: 'Outerwear', productCount: 75, createdAt: '2024-02-01T00:00:00Z', updatedAt: '2024-03-01T00:00:00Z' },
 ];

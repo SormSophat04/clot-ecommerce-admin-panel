@@ -11,6 +11,13 @@ export const ENDPOINTS = {
   LOGIN: '/users/login',
   LOGOUT: '/auth/logout',
   ME: '/auth/me',
+  AUTH_CATEGORIES: '/auth/categories',
+
+  // Category CRUD
+  CATEGORY_LIST: '/categories',
+  CATEGORY_CREATE: '/categories',
+  CATEGORY_UPDATE: '/categories',
+  CATEGORY_DELETE: '/categories',
 
   // Dashboard
   DASHBOARD_SUMMARY: '/dashboard/summary',
@@ -22,5 +29,9 @@ export const ENDPOINTS = {
   PRODUCTS: '/products',
   ORDERS: '/orders',
   CUSTOMERS: '/customers',
+  CATEGORY: '/categories',
+  BRAND: '/brands',
+  COLOR: '/colors',
+  SIZE: '/sizes',
   REVIEWS: '/reviews',
 } as const;

@@ -6,6 +6,7 @@ import {
   BarChart2, 
   Star, 
   Tag,
+  Palette,
   Layers,
   Calendar,
   MessageSquare,
@@ -15,10 +16,12 @@ import {
 import './Sidebar.css';
 
 const navItems = [
-  { icon: Home,        label: 'Dashboard',   active: true },
+  { icon: Home,        label: 'Dashboard' },
   { icon: ShoppingBag, label: 'Orders' },
   { icon: Package,     label: 'Products' },
   { icon: Layers,      label: 'Categories' },
+  { icon: Tag,         label: 'Brands' },
+  { icon: Palette,     label: 'Colors & Sizes' },
   { icon: Users,       label: 'Customers' },
   { icon: BarChart2,   label: 'Analytics' },
   { icon: Star,        label: 'Reviews' },
@@ -29,7 +32,12 @@ const navItems = [
   { icon: Settings,    label: 'Settings' },
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  activePage: string;
+  onPageChange: (page: string) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -46,12 +54,19 @@ const Sidebar = () => {
         <ul>
           {navItems.map((item, idx) => {
             const Icon = item.icon;
+            const isActive = activePage === item.label;
             return (
-              <li key={idx} className={item.active ? 'active' : ''}>
-                <a href="#">
+              <li key={idx} className={isActive ? 'active' : ''}>
+                <a 
+                  href="#" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onPageChange(item.label);
+                  }}
+                >
                   <Icon size={20} className="nav-icon" />
                   <span>{item.label}</span>
-                  {item.active && <span className="active-indicator" />}
+                  {isActive && <span className="active-indicator" />}
                 </a>
               </li>
             );

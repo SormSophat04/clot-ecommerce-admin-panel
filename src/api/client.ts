@@ -1,5 +1,4 @@
 import { API_CONFIG } from './config';
-import type { ApiResponse } from '../types/api';
 
 // Token storage key
 const TOKEN_KEY = 'auth_token';
@@ -16,7 +15,9 @@ export const setToken = (token: string): void => {
 
 // Remove token
 export const removeToken = (): void => {
-  localStorage.removeItem(TOKEN_KEY);
+  if (localStorage.getItem(TOKEN_KEY)) {
+    localStorage.removeItem(TOKEN_KEY);
+  }
 };
 
 // API Error class
@@ -37,6 +38,59 @@ interface RequestOptions extends RequestInit {
   skipAuth?: boolean;
 }
 
+interface ApiEnvelope<T> {
+  data: T;
+  success?: boolean;
+  message?: string;
+  error?: unknown;
+}
+
+const isApiEnvelope = <T>(value: unknown): value is ApiEnvelope<T> => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  return (
+    'data' in value &&
+    ('success' in value || 'message' in value || 'error' in value)
+  );
+};
+
+const getErrorMessage = (status: number, payload: unknown): string => {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'message' in payload &&
+    typeof (payload as { message?: unknown }).message === 'string'
+  ) {
+    return (payload as { message: string }).message;
+  }
+
+  return `HTTP ${status}`;
+};
+
+const parseResponseBody = async (response: Response): Promise<unknown> => {
+  if (response.status === 204 || response.status === 205) {
+    return undefined;
+  }
+
+  const rawText = await response.text();
+  if (!rawText) {
+    return undefined;
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) {
+    try {
+      return JSON.parse(rawText);
+    } catch {
+      return rawText;
+    }
+  }
+
+  return rawText;
+};
+
 // Base API client
 export const apiClient = {
   async request<T>(
@@ -47,16 +101,17 @@ export const apiClient = {
 
     const url = `${API_CONFIG.BASE_URL}${endpoint}`;
 
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...fetchOptions.headers,
-    };
+    const headers = new Headers(fetchOptions.headers);
+    const isMultipartBody = fetchOptions.body instanceof FormData;
+    if (!isMultipartBody && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
 
     // Add auth token if not skipped
     if (!skipAuth) {
       const token = getToken();
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers.set('Authorization', `Bearer ${token}`);
       }
     }
 
@@ -74,16 +129,23 @@ export const apiClient = {
 
       // Handle response
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          removeToken();
+        }
+        const errorData = await parseResponseBody(response);
         throw new ApiError(
           response.status,
-          errorData.message || `HTTP ${response.status}`,
+          getErrorMessage(response.status, errorData),
           errorData
         );
       }
 
-      const result: ApiResponse<T> = await response.json();
-      return result.data;
+      const payload = await parseResponseBody(response);
+      if (isApiEnvelope<T>(payload)) {
+        return payload.data;
+      }
+
+      return payload as T;
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -101,34 +163,37 @@ export const apiClient = {
 
   // HTTP methods
   get<T>(endpoint: string, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'GET' });
+    return apiClient.request<T>(endpoint, { ...options, method: 'GET' });
   },
 
   post<T>(endpoint: string, data?: unknown, options?: RequestOptions) {
-    return this.request<T>(endpoint, {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    return apiClient.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: JSON.stringify(data),
+      body,
     });
   },
 
   put<T>(endpoint: string, data?: unknown, options?: RequestOptions) {
-    return this.request<T>(endpoint, {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    return apiClient.request<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: JSON.stringify(data),
+      body,
     });
   },
 
   patch<T>(endpoint: string, data?: unknown, options?: RequestOptions) {
-    return this.request<T>(endpoint, {
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    return apiClient.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body,
     });
   },
 
   delete<T>(endpoint: string, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+    return apiClient.request<T>(endpoint, { ...options, method: 'DELETE' });
   },
 };

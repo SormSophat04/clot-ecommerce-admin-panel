@@ -103,6 +103,48 @@ export interface UpdateProductRequest extends Partial<CreateProductRequest> {
   status?: 'active' | 'draft' | 'archived';
 }
 
+export interface ProductRecord {
+  productId: number;
+  productName: string;
+  sku: string;
+  price: number;
+  stockQuantity: number;
+  description: string;
+  categoryId: number | null;
+  categoryName: string;
+  brandId: number | null;
+  brandName: string;
+  colorIds: number[];
+  sizeIds: number[];
+  colors: Color[];
+  sizes: Size[];
+  images: string[];
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface ProductImageRecord {
+  productImageId: number;
+  productId: number;
+  imageData: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface CreateProductPayload {
+  productName: string;
+  sku?: string;
+  price: number;
+  stockQuantity: number;
+  description?: string;
+  categoryId: number;
+  brandId: number;
+  colorIds?: number[];
+  sizeIds?: number[];
+}
+
+export type UpdateProductPayload = CreateProductPayload;
+
 // Order types
 export interface Order {
   id: string;
@@ -147,4 +189,69 @@ export interface Address {
 export interface UpdateOrderStatusRequest {
   status: Order['status'];
   paymentStatus?: Order['paymentStatus'];
+}
+// Category types
+export interface Category {
+  categoryId: number;
+  categoryName: string;
+  productCount?: number;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+}
+
+export interface UpdateCategoryRequest {
+  name: string;
+}
+
+// Brand types
+export interface Brand {
+  brandId: number;
+  brandName: string;
+  productCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBrandRequest {
+  name: string;
+}
+
+export interface UpdateBrandRequest {
+  name: string;
+}
+
+// Color types
+export interface Color {
+  colorId: number;
+  colorName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateColorRequest {
+  name: string;
+}
+
+export interface UpdateColorRequest {
+  name: string;
+}
+
+// Size types
+export interface Size {
+  sizeId: number;
+  sizeName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSizeRequest {
+  name: string;
+}
+
+export interface UpdateSizeRequest {
+  name: string;
 }

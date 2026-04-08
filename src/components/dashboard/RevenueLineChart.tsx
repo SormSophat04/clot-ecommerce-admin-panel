@@ -64,7 +64,7 @@ const RevenueLineChart: React.FC<RevenueLineChartProps> = ({ data }) => {
               }}
               itemStyle={{ color: 'var(--text-primary)' }}
               cursor={{ stroke: 'var(--primary)', strokeWidth: 1, strokeDasharray: '4 4' }}
-              formatter={(v: number) => [`${v} orders`, 'Orders']}
+              formatter={(value) => [`${Number(value ?? 0)} orders`, 'Orders']}
             />
             <Area type="monotone" dataKey="orders" stroke="var(--primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorOrders)" dot={false} activeDot={{ r: 5, fill: 'var(--primary)', strokeWidth: 0 }} />
           </AreaChart>
